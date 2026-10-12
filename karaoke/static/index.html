@@ -9,10 +9,15 @@
 <body>
   <header>
     <h1>🎤 Karaoke</h1>
-    <p>Pide tu canción y el DJ te llamará cuando sea tu turno</p>
+    <p>Pide tu canción y mira quién está cantando</p>
   </header>
 
   <main class="una-columna">
+    <section id="escenario" class="escenario oculto" aria-live="polite">
+      <div id="esc-ahora" class="esc-ahora"></div>
+      <div id="esc-sigue" class="esc-sigue"></div>
+    </section>
+
     <section>
       <h2>Pedir canción</h2>
       <form id="form-solicitud">

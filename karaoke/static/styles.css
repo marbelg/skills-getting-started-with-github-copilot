@@ -332,3 +332,19 @@ button:disabled { opacity: .4; cursor: default; filter: none; }
 @media (min-width: 640px) { .barra > .tabs { flex: 1 1 auto; grid-template-columns: repeat(4, auto); border-radius: 999px; } }
 .tab { border-radius: 12px; }
 @media (min-width: 640px) { .tab { border-radius: 999px; } }
+
+/* ---------- Escenario: quién canta y quién sigue (vista de las mesas) ---------- */
+.escenario {
+  border: 2px solid var(--accent);
+  background: linear-gradient(135deg, rgba(255, 63, 164, .18), rgba(57, 208, 255, .10));
+  box-shadow: 0 0 24px rgba(255, 63, 164, .25);
+  text-align: center;
+}
+.esc-etiqueta { color: var(--accent); font-size: .8rem; font-weight: 800; letter-spacing: .12em; }
+.esc-nombre { font-size: 1.8rem; font-weight: 800; margin-top: 4px; overflow-wrap: anywhere; }
+.esc-nombre span { display: block; font-size: .95rem; font-weight: 600; color: var(--warn); }
+.esc-cancion { color: var(--muted); margin-top: 4px; }
+.esc-sigue { margin-top: 12px; padding-top: 12px; border-top: 1px solid #3b3166; color: var(--muted); }
+.esc-sigue:empty { display: none; }
+.esc-ahora:empty + .esc-sigue { margin-top: 0; padding-top: 0; border-top: 0; }
+.esc-sigue b { color: var(--text); font-size: 1.1rem; }

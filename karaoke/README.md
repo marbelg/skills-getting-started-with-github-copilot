@@ -12,8 +12,9 @@ decide el orden desde una vista privada.
 
 **Cliente:** elige su mesa de la lista (o la **Barra** si no está en mesa),
 escribe su nombre, canción, artista (opcional), género y link de YouTube
-(opcional). Las mesas **no ven la fila** ni qué canción sigue: el orden es
-sorpresa. Ningún endpoint público expone la fila; solo el DJ (con PIN) la ve.
+(opcional). Arriba ven **quién está cantando** (nombre, mesa y canción) y
+**quién sigue** (solo nombre y mesa, para que se prepare). El resto de la fila
+es sorpresa: ningún endpoint público la expone; solo el DJ (con PIN) la ve.
 
 **DJ (administrador)** – panel con 4 pestañas y un resumen arriba (en cola,
 cantadas, mesas pidiendo, promedio de estrellas):

@@ -132,3 +132,15 @@ def test_se_guarda_cuando_canto():
     a = pedir().json()["id"]
     s = client.post(f"/api/dj/solicitudes/{a}/estado", json={"estado": "sonando"}, headers=DJ).json()
     assert s["cantada_en"]
+
+
+def test_mesas_ven_quien_canta_y_quien_sigue():
+    assert client.get("/api/escenario").json() == {"ahora": None, "sigue": None}
+    a = pedir(mesa="1", nombre="Ana").json()["id"]
+    pedir(mesa="2", nombre="Luis", cancion="La bamba")
+    pedir(mesa="3", nombre="Sofía")
+    client.post(f"/api/dj/solicitudes/{a}/estado", json={"estado": "sonando"}, headers=DJ)
+    esc = client.get("/api/escenario").json()
+    assert esc["ahora"]["nombre"] == "Ana" and esc["ahora"]["cancion"] == "Amor eterno"
+    # Solo se revela quién sigue, sin su canción ni el resto de la fila
+    assert esc["sigue"] == {"nombre": "Luis", "mesa": "2"}

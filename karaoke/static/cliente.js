@@ -90,6 +90,28 @@ function mostrarCreditos() {
   $("creditos-contacto").replaceChildren(...enlaces);
 }
 
+// Quién canta ahora y quién sigue (el resto de la fila es sorpresa)
+const dondeEsta = (mesa) => (mesa === "Barra" ? "🍸 Barra" : `Mesa ${mesa}`);
+
+async function cargarEscenario() {
+  try {
+    const { ahora, sigue } = await (await fetch("/api/escenario")).json();
+    $("esc-ahora").innerHTML = ahora
+      ? `<div class="esc-etiqueta">🎤 CANTANDO AHORA</div>
+         <div class="esc-nombre">${escapar(ahora.nombre)} <span>${escapar(dondeEsta(ahora.mesa))}</span></div>
+         <div class="esc-cancion">${escapar(ahora.cancion)}${ahora.artista ? ` – ${escapar(ahora.artista)}` : ""}</div>`
+      : "";
+    $("esc-sigue").innerHTML = sigue
+      ? `⏭️ Sigue: <b>${escapar(sigue.nombre)}</b> · ${escapar(dondeEsta(sigue.mesa))} — ¡prepárate!`
+      : "";
+    $("escenario").classList.toggle("oculto", !ahora && !sigue);
+  } catch {
+    // Se reintenta en el siguiente ciclo
+  }
+}
+
 mostrarCreditos();
 cargarGeneros();
 cargarMesas();
+cargarEscenario();
+setInterval(cargarEscenario, 5000);

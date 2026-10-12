@@ -171,7 +171,17 @@ def get_mesas():
 
 
 # ---------- Vista de las mesas ----------
-# Las mesas solo pueden pedir: no hay ningún endpoint público que muestre la fila.
+# Las mesas no ven la fila: solo quién canta ahora y el nombre de quien sigue.
+
+@app.get("/api/escenario")
+def get_escenario():
+    sonando = next((s for s in solicitudes if s["estado"] == "sonando"), None)
+    siguiente = next(iter(cola()), None)
+    return {
+        "ahora": {k: sonando[k] for k in ("nombre", "mesa", "cancion", "artista")} if sonando else None,
+        # De quien sigue solo se dice quién es; la canción es sorpresa
+        "sigue": {k: siguiente[k] for k in ("nombre", "mesa")} if siguiente else None,
+    }
 
 @app.post("/api/solicitudes", status_code=201)
 def crear_solicitud(datos: NuevaSolicitud):
