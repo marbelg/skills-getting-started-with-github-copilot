@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaoke – Pide tu canción</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🎤 Karaoke</h1>
+    <p>Pide tu canción y espera tu turno</p>
+  </header>
+
+  <main class="dos-columnas">
+    <section>
+      <h2>Pedir canción</h2>
+      <form id="form-solicitud">
+        <div class="fila">
+          <div>
+            <label for="mesa">Mesa</label>
+            <input id="mesa" required maxlength="10" placeholder="Ej. 7" inputmode="numeric">
+          </div>
+          <div>
+            <label for="nombre">Tu nombre</label>
+            <input id="nombre" required maxlength="40" placeholder="¿Quién canta?">
+          </div>
+        </div>
+
+        <label for="cancion">Canción</label>
+        <input id="cancion" required maxlength="100" placeholder="Nombre de la canción">
+
+        <label for="artista">Artista (opcional)</label>
+        <input id="artista" maxlength="60" placeholder="Ej. Juan Gabriel">
+
+        <label for="genero">Género</label>
+        <select id="genero" required>
+          <option value="">-- Elige un género --</option>
+        </select>
+
+        <label for="youtube">Link de YouTube (opcional)</label>
+        <input id="youtube" type="url" maxlength="300" placeholder="https://youtube.com/watch?v=...">
+
+        <button type="submit">Enviar al DJ 🎶</button>
+      </form>
+      <div id="mensaje" class="mensaje oculto"></div>
+    </section>
+
+    <section>
+      <h2>Cola de canciones</h2>
+      <div id="sonando"></div>
+      <ol id="cola" class="lista"></ol>
+    </section>
+  </main>
+
+  <script src="cliente.js"></script>
+</body>
+</html>

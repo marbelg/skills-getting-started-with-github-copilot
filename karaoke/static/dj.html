@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Karaoke – Panel del DJ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🎧 Panel del DJ</h1>
+    <p>Arrastra para ordenar la cola</p>
+  </header>
+
+  <section id="login">
+    <h2>Acceso DJ</h2>
+    <form id="form-login">
+      <label for="pin">PIN</label>
+      <input id="pin" type="password" inputmode="numeric" required autocomplete="off">
+      <button type="submit">Entrar</button>
+    </form>
+    <div id="error-login" class="mensaje error oculto"></div>
+  </section>
+
+  <main id="panel" class="oculto">
+    <section>
+      <div id="sonando"></div>
+      <div class="barra">
+        <h2>Cola (<span id="total">0</span>)</h2>
+        <div class="acciones">
+          <button id="siguiente" class="chico ok">▶ Poner la siguiente</button>
+          <button id="salir" class="chico sec">Salir</button>
+        </div>
+      </div>
+      <ol id="cola" class="lista" style="margin-top:12px"></ol>
+    </section>
+
+    <section>
+      <h2>Historial</h2>
+      <ul id="historial" class="lista"></ul>
+    </section>
+  </main>
+
+  <script src="dj.js"></script>
+</body>
+</html>
