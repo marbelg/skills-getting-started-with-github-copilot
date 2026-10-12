@@ -14,9 +14,18 @@ decide el orden desde una vista privada.
 YouTube (opcional). Las mesas **no ven la fila** ni qué canción sigue: el orden
 es sorpresa. Ningún endpoint público expone la fila; solo el DJ (con PIN) la ve.
 
-**DJ:** arrastra (o usa ▲▼ en el celular/tablet) para reordenar, ▶ para poner
+**DJ:** ordena la cola como quiera: arrastrando, con ▲▼, con ⤒/⤓ (primer o
+último lugar) o escribiendo la posición exacta en el número de cada canción.
+Cada mesa tiene su propio color y arriba se ve cuántas canciones tiene en espera
+cada mesa (toca una para resaltar sus canciones). Además: ▶ para poner
 una canción, ✓ cuando terminó, ✕ para rechazar, y ↩ para regresar una canción
 del historial a la cola. La pantalla se actualiza sola cada 3 segundos.
+
+## Banner del desarrollador
+
+La pantalla de las mesas muestra "Aplicación desarrollada por MoonDev" con los
+datos de contacto. Se editan en `karaoke/static/creditos.js` (lo que quede
+vacío no se muestra).
 
 ## Reglas
 

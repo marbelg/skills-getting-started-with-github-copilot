@@ -58,4 +58,25 @@ const mesaUrl = new URLSearchParams(location.search).get("mesa");
 $("mesa").value = mesaUrl || localStorage.getItem("karaoke-mesa") || "";
 $("nombre").value = localStorage.getItem("karaoke-nombre") || "";
 
+function mostrarCreditos() {
+  if (typeof CREDITOS === "undefined") return;
+  $("creditos-nombre").textContent = CREDITOS.nombre || "MoonDev";
+  const enlaces = [];
+  const agregar = (href, icono, texto) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.textContent = `${icono} ${texto}`;
+    if (href.startsWith("http")) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    enlaces.push(a);
+  };
+  const wa = (CREDITOS.whatsapp || "").replace(/\D/g, "");
+  if (wa) agregar(`https://wa.me/${wa}`, "💬", "WhatsApp");
+  if (CREDITOS.telefono) agregar(`tel:${CREDITOS.telefono.replace(/[^\d+]/g, "")}`, "📞", CREDITOS.telefono);
+  if (CREDITOS.email) agregar(`mailto:${CREDITOS.email}`, "✉️", CREDITOS.email);
+  if (CREDITOS.instagram) agregar(`https://instagram.com/${CREDITOS.instagram.replace(/^@/, "")}`, "📸", `@${CREDITOS.instagram.replace(/^@/, "")}`);
+  if (CREDITOS.web) agregar(CREDITOS.web, "🌐", CREDITOS.web.replace(/^https?:\/\//, ""));
+  $("creditos-contacto").replaceChildren(...enlaces);
+}
+
+mostrarCreditos();
 cargarGeneros();

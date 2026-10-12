@@ -148,3 +148,74 @@ a.yt { color: #ff6b6b; font-weight: 600; text-decoration: none; }
 .barra h2 { margin: 0; }
 
 #login { max-width: 360px; margin: 40px auto; }
+
+/* Mesas: color propio por mesa */
+.mesa-badge {
+  flex: none;
+  min-width: 52px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: var(--mesa);
+  color: #120a1f;
+  font-weight: 800;
+  font-size: 1.3rem;
+  line-height: 1.05;
+  text-align: center;
+}
+.mesa-badge small { display: block; font-size: .6rem; letter-spacing: .1em; font-weight: 700; }
+.item.mesa-borde { border-left: 5px solid var(--mesa); }
+.item.atenuado { opacity: .3; }
+
+.resumen-mesas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.resumen-mesas:empty { display: none; }
+.mesa-filtro {
+  width: auto;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: transparent;
+  border: 2px solid var(--mesa);
+  color: var(--text);
+  font-size: .85rem;
+}
+.mesa-filtro b { color: var(--mesa); margin-left: 4px; }
+.mesa-filtro.activa { background: var(--mesa); color: #120a1f; }
+.mesa-filtro.activa b { color: #120a1f; }
+
+.pos {
+  width: 52px;
+  flex: none;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+button:disabled { opacity: .4; cursor: default; filter: none; }
+
+/* Banner del desarrollador en la vista de las mesas */
+.creditos {
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 63, 164, .16), rgba(57, 208, 255, .16));
+  border: 1px solid rgba(57, 208, 255, .35);
+}
+.creditos-marca { font-size: .95rem; color: var(--muted); }
+.creditos-marca strong { color: var(--text); font-size: 1.15rem; letter-spacing: .03em; }
+.creditos-contacto { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+.creditos-contacto:empty { display: none; }
+.creditos-contacto a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+.creditos-contacto a:hover { background: #3b3166; }
+
+/* En pantallas chicas los botones bajan a otra línea para no aplastar el título */
+.item { flex-wrap: wrap; }
+.item .info { flex: 1 1 150px; }
+.item .acciones { margin-left: auto; }
