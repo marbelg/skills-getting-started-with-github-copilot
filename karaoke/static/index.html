@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaoke – Pide tu canción</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🎤 Karaoke</h1>
+    <p>Pide tu canción y mira quién está cantando</p>
+  </header>
+
+  <main class="una-columna">
+    <section id="escenario" class="escenario oculto" aria-live="polite">
+      <div id="esc-ahora" class="esc-ahora"></div>
+      <div id="esc-sigue" class="esc-sigue"></div>
+    </section>
+
+    <section>
+      <h2>Pedir canción</h2>
+      <form id="form-solicitud">
+        <div class="fila">
+          <div>
+            <label for="mesa">¿Dónde estás?</label>
+            <select id="mesa" required>
+              <option value="">Elige</option>
+            </select>
+          </div>
+          <div>
+            <label for="nombre">Tu nombre</label>
+            <input id="nombre" required maxlength="40" placeholder="¿Quién canta?">
+          </div>
+        </div>
+
+        <label for="cancion">Canción</label>
+        <input id="cancion" required maxlength="100" placeholder="Nombre de la canción">
+
+        <label for="artista">Artista (opcional)</label>
+        <input id="artista" maxlength="60" placeholder="Ej. Juan Gabriel">
+
+        <label for="genero">Género</label>
+        <select id="genero" required>
+          <option value="">-- Elige un género --</option>
+        </select>
+
+        <label for="youtube">Link de YouTube (opcional)</label>
+        <input id="youtube" type="url" maxlength="300" placeholder="https://youtube.com/watch?v=...">
+
+        <button type="submit">Enviar al DJ 🎶</button>
+      </form>
+      <div id="mensaje" class="mensaje oculto"></div>
+    </section>
+
+    <aside class="creditos" aria-label="Desarrollador">
+      <div class="creditos-marca">Aplicación desarrollada por <strong id="creditos-nombre">MoonDev</strong></div>
+      <div id="creditos-contacto" class="creditos-contacto"></div>
+    </aside>
+  </main>
+
+  <script src="creditos.js"></script>
+  <script src="cliente.js"></script>
+</body>
+</html>
