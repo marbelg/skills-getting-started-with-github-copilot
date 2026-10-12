@@ -1,8 +1,8 @@
 """
 Karaoke App API
 
-Las mesas piden canciones desde su celular y el DJ, desde su propia vista
-protegida con PIN, decide el orden, marca la canción que está sonando y
+Las mesas piden canciones desde su celular (sin ver la fila, para que sea
+sorpresa) y el DJ, desde su propia vista protegida con PIN, decide el orden, marca la canción que está sonando y
 la que ya se cantó.
 """
 
@@ -103,7 +103,7 @@ def cola() -> list[dict]:
 
 
 def vista_publica(s: dict) -> dict:
-    # Las mesas no ven los links ni datos internos
+    # Respuesta al pedir: solo los datos de la propia solicitud
     return {k: s[k] for k in ("id", "mesa", "nombre", "cancion", "artista", "genero")}
 
 
@@ -125,6 +125,7 @@ def get_generos():
 
 
 # ---------- Vista de las mesas ----------
+# Las mesas solo pueden pedir: no hay ningún endpoint público que muestre la fila.
 
 @app.post("/api/solicitudes", status_code=201)
 def crear_solicitud(datos: NuevaSolicitud):
@@ -143,15 +144,6 @@ def crear_solicitud(datos: NuevaSolicitud):
         }
         solicitudes.append(solicitud)
     return vista_publica(solicitud)
-
-
-@app.get("/api/cola")
-def get_cola_publica():
-    sonando = next((s for s in solicitudes if s["estado"] == "sonando"), None)
-    return {
-        "sonando": vista_publica(sonando) if sonando else None,
-        "siguientes": [vista_publica(s) for s in cola()],
-    }
 
 
 # ---------- Vista del DJ (requiere PIN) ----------

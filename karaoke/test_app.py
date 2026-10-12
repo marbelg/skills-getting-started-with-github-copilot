@@ -18,11 +18,22 @@ def pedir(**extra):
     return client.post("/api/solicitudes", json=datos)
 
 
-def test_mesa_pide_cancion_y_aparece_en_cola():
-    assert pedir().status_code == 201
-    cola = client.get("/api/cola").json()
-    assert cola["siguientes"][0]["cancion"] == "Amor eterno"
-    assert "youtube" not in cola["siguientes"][0]
+def dj_cola():
+    todas = client.get("/api/dj/solicitudes", headers=DJ).json()
+    return [s for s in todas if s["estado"] == "pendiente"]
+
+
+def test_mesa_pide_cancion_y_le_llega_al_dj():
+    resp = pedir()
+    assert resp.status_code == 201
+    assert "youtube" not in resp.json()
+    assert dj_cola()[0]["cancion"] == "Amor eterno"
+
+
+def test_mesas_no_pueden_ver_la_fila():
+    pedir()
+    assert client.get("/api/cola").status_code == 404
+    assert client.get("/api/dj/solicitudes").status_code == 401
 
 
 def test_youtube_opcional_y_validado():
@@ -54,7 +65,7 @@ def test_dj_reordena_cola():
     c = pedir(mesa="3").json()["id"]
     resp = client.put("/api/dj/orden", json={"ids": [c, a, b]}, headers=DJ)
     assert resp.status_code == 200
-    assert [s["id"] for s in client.get("/api/cola").json()["siguientes"]] == [c, a, b]
+    assert [s["id"] for s in dj_cola()] == [c, a, b]
     # Orden incompleto se rechaza
     assert client.put("/api/dj/orden", json={"ids": [a, b]}, headers=DJ).status_code == 409
 
@@ -66,7 +77,6 @@ def test_solo_una_cancion_sonando():
     client.post(f"/api/dj/solicitudes/{b}/estado", json={"estado": "sonando"}, headers=DJ)
     todas = {s["id"]: s["estado"] for s in client.get("/api/dj/solicitudes", headers=DJ).json()}
     assert todas == {a: "cantada", b: "sonando"}
-    assert client.get("/api/cola").json()["sonando"]["id"] == b
 
 
 def test_qr_por_mesa_conserva_numero():

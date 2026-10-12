@@ -7,12 +7,12 @@ decide el orden desde una vista privada.
 
 | Vista | URL | Quién la usa |
 |-------|-----|--------------|
-| Pedir canción + ver la cola | `/` (o `/?mesa=7` desde un QR en la mesa) | Clientes |
+| Pedir canción | `/` (o `/?mesa=7` desde un QR en la mesa) | Clientes |
 | Panel del DJ (protegido con PIN) | `/dj` | Solo el DJ |
 
 **Cliente:** mesa, nombre, canción, artista (opcional), género y link de
-YouTube (opcional). Ve la canción que está sonando y la cola en orden. Los links
-de YouTube solo los ve el DJ.
+YouTube (opcional). Las mesas **no ven la fila** ni qué canción sigue: el orden
+es sorpresa. Ningún endpoint público expone la fila; solo el DJ (con PIN) la ve.
 
 **DJ:** arrastra (o usa ▲▼ en el celular/tablet) para reordenar, ▶ para poner
 una canción, ✓ cuando terminó, ✕ para rechazar, y ↩ para regresar una canción

@@ -20,32 +20,6 @@ async function cargarGeneros() {
   }
 }
 
-function lineaCancion(s) {
-  const artista = s.artista ? ` – ${escapar(s.artista)}` : "";
-  return `
-    <div class="info">
-      <div class="titulo">${escapar(s.cancion)}${artista}</div>
-      <div class="detalle">
-        ${escapar(s.nombre)} · <span class="chip mesa-chip">Mesa ${escapar(s.mesa)}</span>
-        <span class="chip">${escapar(s.genero)}</span>
-      </div>
-    </div>`;
-}
-
-async function cargarCola() {
-  try {
-    const { sonando, siguientes } = await (await fetch("/api/cola")).json();
-    $("sonando").innerHTML = sonando
-      ? `<div class="sonando"><div class="etiqueta">♪ SONANDO AHORA</div>${lineaCancion(sonando)}</div>`
-      : "";
-    $("cola").innerHTML = siguientes.length
-      ? siguientes.map((s, i) => `<li class="item"><span class="num">${i + 1}</span>${lineaCancion(s)}</li>`).join("")
-      : `<li class="vacio">No hay canciones en espera. ¡Sé el primero!</li>`;
-  } catch {
-    // Se reintenta en el siguiente ciclo
-  }
-}
-
 $("form-solicitud").addEventListener("submit", async (e) => {
   e.preventDefault();
   const datos = {
@@ -65,13 +39,12 @@ $("form-solicitud").addEventListener("submit", async (e) => {
   const json = await resp.json();
 
   if (resp.ok) {
-    mostrarMensaje("¡Listo! Tu canción fue enviada al DJ.", "ok");
+    mostrarMensaje("¡Listo! Tu canción fue enviada al DJ. Estate atento: te llamarán cuando sea tu turno.", "ok");
     // Se conservan mesa y nombre para pedir otra más rápido
     ["cancion", "artista", "youtube"].forEach((id) => ($(id).value = ""));
     $("genero").value = "";
     localStorage.setItem("karaoke-mesa", datos.mesa);
     localStorage.setItem("karaoke-nombre", datos.nombre);
-    cargarCola();
   } else {
     const detalle = Array.isArray(json.detail)
       ? json.detail.map((d) => d.msg.replace("Value error, ", "")).join(". ")
@@ -86,5 +59,3 @@ $("mesa").value = mesaUrl || localStorage.getItem("karaoke-mesa") || "";
 $("nombre").value = localStorage.getItem("karaoke-nombre") || "";
 
 cargarGeneros();
-cargarCola();
-setInterval(cargarCola, 5000);
