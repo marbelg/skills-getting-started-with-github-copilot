@@ -10,6 +10,8 @@ DJ = {"X-DJ-PIN": karaoke.DJ_PIN}
 @pytest.fixture(autouse=True)
 def limpiar():
     karaoke.solicitudes.clear()
+    karaoke.config["mesas"] = 10
+    karaoke.cantantes.clear()
 
 
 def pedir(**extra):
@@ -82,3 +84,51 @@ def test_solo_una_cancion_sonando():
 def test_qr_por_mesa_conserva_numero():
     resp = client.get("/?mesa=7", follow_redirects=False)
     assert resp.headers["location"] == "/static/index.html?mesa=7"
+
+
+def test_dj_genera_mesas_y_existe_la_barra():
+    assert client.put("/api/dj/mesas", json={"cantidad": 15}).status_code == 401
+    resp = client.put("/api/dj/mesas", json={"cantidad": 15}, headers=DJ)
+    assert resp.json()["mesas"][-2:] == ["15", "Barra"]
+    assert client.get("/api/mesas").json() == [str(n) for n in range(1, 16)] + ["Barra"]
+    assert pedir(mesa="15").status_code == 201
+    assert pedir(mesa="16").status_code == 422
+    assert pedir(mesa="barra").json()["mesa"] == "Barra"
+
+
+def test_barra_limite_por_persona():
+    for _ in range(karaoke.MAX_PENDIENTES_POR_MESA):
+        assert pedir(mesa="Barra", nombre="Ana").status_code == 201
+    assert pedir(mesa="Barra", nombre="Ana").status_code == 429
+    assert pedir(mesa="Barra", nombre="Luis").status_code == 201
+
+
+def test_dj_califica_cantantes():
+    a = pedir().json()["id"]
+    url = f"/api/dj/solicitudes/{a}/calificacion"
+    # No se puede calificar a quien no ha cantado
+    assert client.post(url, json={"estrellas": 5}, headers=DJ).status_code == 409
+    client.post(f"/api/dj/solicitudes/{a}/estado", json={"estado": "sonando"}, headers=DJ)
+    assert client.post(url, json={"estrellas": 6}, headers=DJ).status_code == 422
+    assert client.post(url, json={"estrellas": 4}, headers=DJ).json()["calificacion"] == 4
+    assert client.post(url, json={"estrellas": 0}, headers=DJ).json()["calificacion"] is None
+    assert client.post(url, json={"estrellas": 4}).status_code == 401
+
+
+def test_dj_pone_identificador_y_se_hereda():
+    a = pedir(mesa="4", nombre="Ana").json()["id"]
+    resp = client.put("/api/dj/cantantes", json={"mesa": "4", "nombre": "ana ", "identificador": "Gorra roja"}, headers=DJ)
+    assert resp.status_code == 200
+    b = pedir(mesa="4", nombre="Ana").json()["id"]
+    ids = {s["id"]: s["identificador"] for s in client.get("/api/dj/solicitudes", headers=DJ).json()}
+    assert ids == {a: "Gorra roja", b: "Gorra roja"}
+    # Vacío lo quita
+    client.put("/api/dj/cantantes", json={"mesa": "4", "nombre": "Ana", "identificador": ""}, headers=DJ)
+    assert all(s["identificador"] is None for s in client.get("/api/dj/solicitudes", headers=DJ).json())
+    assert client.put("/api/dj/cantantes", json={"mesa": "4", "nombre": "Ana"}).status_code == 401
+
+
+def test_se_guarda_cuando_canto():
+    a = pedir().json()["id"]
+    s = client.post(f"/api/dj/solicitudes/{a}/estado", json={"estado": "sonando"}, headers=DJ).json()
+    assert s["cantada_en"]

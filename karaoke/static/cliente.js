@@ -53,9 +53,21 @@ $("form-solicitud").addEventListener("submit", async (e) => {
   }
 });
 
+// Las mesas las crea el DJ; la Barra siempre está al final.
 // La mesa puede venir en la URL (QR por mesa): /static/index.html?mesa=7
-const mesaUrl = new URLSearchParams(location.search).get("mesa");
-$("mesa").value = mesaUrl || localStorage.getItem("karaoke-mesa") || "";
+async function cargarMesas() {
+  const mesas = await (await fetch("/api/mesas")).json();
+  for (const m of mesas) {
+    const op = document.createElement("option");
+    op.value = m;
+    op.textContent = m === "Barra" ? "🍸 Barra (no estoy en mesa)" : `Mesa ${m}`;
+    $("mesa").append(op);
+  }
+  const deseada = new URLSearchParams(location.search).get("mesa") || localStorage.getItem("karaoke-mesa") || "";
+  const encontrada = mesas.find((m) => m.toLowerCase() === deseada.toLowerCase());
+  if (encontrada) $("mesa").value = encontrada;
+}
+
 $("nombre").value = localStorage.getItem("karaoke-nombre") || "";
 
 function mostrarCreditos() {
@@ -80,3 +92,4 @@ function mostrarCreditos() {
 
 mostrarCreditos();
 cargarGeneros();
+cargarMesas();

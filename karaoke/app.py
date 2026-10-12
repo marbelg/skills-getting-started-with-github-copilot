@@ -21,6 +21,8 @@ from pydantic import BaseModel, Field, field_validator
 
 DJ_PIN = os.environ.get("KARAOKE_DJ_PIN", "1234")
 MAX_PENDIENTES_POR_MESA = int(os.environ.get("KARAOKE_MAX_POR_MESA", "3"))
+BARRA = "Barra"
+MAX_MESAS = 200
 
 GENEROS = [
     "Pop", "Rock", "Balada", "Ranchera", "Cumbia", "Salsa", "Bachata",
@@ -79,8 +81,27 @@ class NuevoOrden(BaseModel):
     ids: list[int]
 
 
+class ConfigMesas(BaseModel):
+    cantidad: int = Field(ge=1, le=MAX_MESAS)
+
+
+class Identificador(BaseModel):
+    mesa: str
+    nombre: str
+    # Apodo que el DJ le pone a un cantante; vacío lo quita
+    identificador: str = Field(default="", max_length=30)
+
+
+class Calificacion(BaseModel):
+    # 1 a 5 estrellas; 0 quita la calificación
+    estrellas: int = Field(ge=0, le=5)
+
+
 # Base de datos en memoria (se borra al reiniciar el servidor)
 solicitudes: list[dict] = []
+config = {"mesas": int(os.environ.get("KARAOKE_MESAS", "10"))}
+# Identificadores de cantantes que pone el DJ: "mesa|nombre" -> identificador
+cantantes: dict[str, str] = {}
 _ids = count(1)
 _lock = Lock()
 
@@ -95,6 +116,26 @@ def buscar(solicitud_id: int) -> dict:
         if s["id"] == solicitud_id:
             return s
     raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+
+def mesas_disponibles() -> list[str]:
+    """Mesas numeradas que creó el DJ, más la Barra para quien no está en mesa."""
+    return [str(n) for n in range(1, config["mesas"] + 1)] + [BARRA]
+
+
+def normalizar_mesa(mesa: str) -> str:
+    for m in mesas_disponibles():
+        if m.lower() == mesa.strip().lower():
+            return m
+    raise HTTPException(status_code=422, detail=f"La mesa {mesa} no existe. Elige una de la lista.")
+
+
+def clave_cantante(mesa: str, nombre: str) -> str:
+    return f"{mesa}|{nombre.strip().lower()}"
+
+
+def con_identificador(s: dict) -> dict:
+    return {**s, "identificador": cantantes.get(clave_cantante(s["mesa"], s["nombre"]))}
 
 
 def cola() -> list[dict]:
@@ -124,22 +165,37 @@ def get_generos():
     return GENEROS
 
 
+@app.get("/api/mesas")
+def get_mesas():
+    return mesas_disponibles()
+
+
 # ---------- Vista de las mesas ----------
 # Las mesas solo pueden pedir: no hay ningún endpoint público que muestre la fila.
 
 @app.post("/api/solicitudes", status_code=201)
 def crear_solicitud(datos: NuevaSolicitud):
     with _lock:
-        pendientes_mesa = sum(1 for s in cola() if s["mesa"].lower() == datos.mesa.lower())
-        if pendientes_mesa >= MAX_PENDIENTES_POR_MESA:
+        mesa = normalizar_mesa(datos.mesa)
+        if mesa == BARRA:
+            # En la barra hay mucha gente: el límite es por persona
+            mias = [s for s in cola() if s["mesa"] == BARRA
+                    and s["nombre"].lower() == datos.nombre.lower()]
+            quien = f"{datos.nombre} ya tiene"
+        else:
+            mias = [s for s in cola() if s["mesa"] == mesa]
+            quien = f"La mesa {mesa} ya tiene"
+        if len(mias) >= MAX_PENDIENTES_POR_MESA:
             raise HTTPException(
                 status_code=429,
-                detail=f"La mesa {datos.mesa} ya tiene {MAX_PENDIENTES_POR_MESA} canciones en espera",
+                detail=f"{quien} {MAX_PENDIENTES_POR_MESA} canciones en espera",
             )
         solicitud = {
             "id": next(_ids),
             **datos.model_dump(),
+            "mesa": mesa,
             "estado": "pendiente",
+            "calificacion": None,
             "creada": datetime.now(timezone.utc).isoformat(),
         }
         solicitudes.append(solicitud)
@@ -151,7 +207,7 @@ def crear_solicitud(datos: NuevaSolicitud):
 @app.get("/api/dj/solicitudes")
 def get_solicitudes_dj(x_dj_pin: Optional[str] = Header(default=None)):
     verificar_dj(x_dj_pin)
-    return solicitudes
+    return [con_identificador(s) for s in solicitudes]
 
 
 @app.put("/api/dj/orden")
@@ -179,8 +235,54 @@ def cambiar_estado(solicitud_id: int, cambio: CambioEstado,
             for otra in solicitudes:
                 if otra["estado"] == "sonando":
                     otra["estado"] = "cantada"
+            # Para saber hace cuánto cantó cada persona
+            s["cantada_en"] = datetime.now(timezone.utc).isoformat()
+        elif cambio.estado == "pendiente":
+            s.pop("cantada_en", None)
         s["estado"] = cambio.estado
-    return s
+    return con_identificador(s)
+
+
+@app.post("/api/dj/solicitudes/{solicitud_id}/calificacion")
+def calificar(solicitud_id: int, cal: Calificacion,
+              x_dj_pin: Optional[str] = Header(default=None)):
+    verificar_dj(x_dj_pin)
+    with _lock:
+        s = buscar(solicitud_id)
+        if s["estado"] not in ("sonando", "cantada"):
+            raise HTTPException(status_code=409,
+                                detail="Solo se califica a quien ya cantó o está cantando")
+        s["calificacion"] = cal.estrellas or None
+    return con_identificador(s)
+
+
+@app.put("/api/dj/cantantes")
+def poner_identificador(datos: Identificador, x_dj_pin: Optional[str] = Header(default=None)):
+    """El DJ le pone un identificador a un cantante (mesa + nombre).
+    Las siguientes canciones de esa persona lo heredan solas."""
+    verificar_dj(x_dj_pin)
+    clave = clave_cantante(datos.mesa, datos.nombre)
+    identificador = datos.identificador.strip()
+    with _lock:
+        if identificador:
+            cantantes[clave] = identificador
+        else:
+            cantantes.pop(clave, None)
+    return {"clave": clave, "identificador": identificador or None}
+
+
+@app.get("/api/dj/mesas")
+def get_mesas_dj(x_dj_pin: Optional[str] = Header(default=None)):
+    verificar_dj(x_dj_pin)
+    return {"cantidad": config["mesas"], "mesas": mesas_disponibles()}
+
+
+@app.put("/api/dj/mesas")
+def generar_mesas(datos: ConfigMesas, x_dj_pin: Optional[str] = Header(default=None)):
+    """El DJ decide cuántas mesas hay; la Barra siempre existe."""
+    verificar_dj(x_dj_pin)
+    config["mesas"] = datos.cantidad
+    return {"cantidad": config["mesas"], "mesas": mesas_disponibles()}
 
 
 @app.delete("/api/dj/solicitudes/{solicitud_id}")

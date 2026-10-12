@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>🎧 Panel del DJ</h1>
-    <p>Ordena la cola como quieras: arrastra, usa las flechas o escribe la posición</p>
+    <p>Administra la cola, las mesas y las calificaciones</p>
   </header>
 
   <section id="login">
@@ -24,23 +24,86 @@
   </section>
 
   <main id="panel" class="oculto">
-    <section>
-      <div id="sonando"></div>
-      <div class="barra">
-        <h2>Cola (<span id="total">0</span>)</h2>
-        <div class="acciones">
-          <button id="siguiente" class="chico ok">▶ Poner la siguiente</button>
-          <button id="salir" class="chico sec">Salir</button>
-        </div>
-      </div>
-      <div id="resumen-mesas" class="resumen-mesas" aria-label="Canciones en espera por mesa"></div>
-      <ol id="cola" class="lista" style="margin-top:12px"></ol>
-    </section>
+    <div class="stats">
+      <div class="stat"><span id="st-cola">0</span>en cola</div>
+      <div class="stat"><span id="st-cantadas">0</span>cantadas</div>
+      <div class="stat"><span id="st-mesas">0</span>mesas pidiendo</div>
+      <div class="stat"><span id="st-promedio">–</span>promedio ⭐</div>
+    </div>
 
-    <section>
-      <h2>Historial</h2>
-      <ul id="historial" class="lista"></ul>
-    </section>
+    <div class="barra">
+      <nav class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="cola" aria-selected="true">🎵 Cola</button>
+        <button class="tab" role="tab" data-tab="mesas" aria-selected="false">🪑 Mesas</button>
+        <button class="tab" role="tab" data-tab="cantantes" aria-selected="false">👥 Cantantes</button>
+        <button class="tab" role="tab" data-tab="calificaciones" aria-selected="false">⭐ Calificaciones</button>
+      </nav>
+      <button id="salir" class="chico sec">Salir</button>
+    </div>
+
+    <!-- Pestaña: Cola -->
+    <div id="tab-cola" class="tab-panel">
+      <section>
+        <div id="sonando"></div>
+        <div class="barra">
+          <h2>Cola (<span id="total">0</span>)</h2>
+          <button id="siguiente" class="chico ok">▶ Poner la siguiente</button>
+        </div>
+        <div class="vista-toggle" role="group" aria-label="Cómo ver la cola">
+          <span>Ver:</span>
+          <button class="vista" data-vista="orden" aria-pressed="true">En orden</button>
+          <button class="vista" data-vista="mesa" aria-pressed="false">Por mesa</button>
+        </div>
+        <div id="resumen-mesas" class="resumen-mesas" aria-label="Canciones en espera por mesa"></div>
+        <ol id="cola" class="lista" style="margin-top:12px"></ol>
+        <div id="cola-por-mesa" class="cola-por-mesa oculto"></div>
+        <p class="nota">Ordena como quieras: arrastra, usa ▲▼, ⤒⤓ (primer o último lugar) o escribe la posición.
+          Toca 🏷️ para ponerle un identificador a un cantante; 🔁 dice cuántas veces ha cantado y hace cuánto.</p>
+      </section>
+
+      <section>
+        <h2>Historial</h2>
+        <p class="nota" style="margin-top:-6px">Califica a cada cantante con las estrellas. Toca la misma estrella otra vez para quitarla.</p>
+        <ul id="historial" class="lista"></ul>
+      </section>
+    </div>
+
+    <!-- Pestaña: Mesas -->
+    <div id="tab-mesas" class="tab-panel oculto">
+      <section>
+        <h2>¿Cuántas mesas hay hoy?</h2>
+        <form id="form-mesas" class="form-mesas">
+          <input id="cantidad-mesas" type="number" min="1" max="200" required aria-label="Cantidad de mesas">
+          <button type="submit" class="chico ok">Generar mesas</button>
+        </form>
+        <p class="nota">Se crean las mesas 1 a la que indiques. La <b>Barra</b> siempre existe para quien no está en mesa.
+          Toca "Copiar link" para hacer el QR de cada mesa.</p>
+        <div id="mensaje-mesas" class="mensaje ok oculto"></div>
+      </section>
+      <div id="grid-mesas" class="grid-mesas"></div>
+    </div>
+
+    <!-- Pestaña: Cantantes -->
+    <div id="tab-cantantes" class="tab-panel oculto">
+      <section>
+        <h2>👥 Cantantes de la noche</h2>
+        <p class="nota" style="margin-top:-6px">Ordenados por cuántas veces han cantado. Ponles un identificador para reconocerlos;
+          si dos nombres tienen el mismo identificador, se cuentan como la misma persona.</p>
+        <ul id="lista-cantantes" class="lista" style="margin-top:12px"></ul>
+      </section>
+    </div>
+
+    <!-- Pestaña: Calificaciones -->
+    <div id="tab-calificaciones" class="tab-panel oculto">
+      <section>
+        <h2>🏆 Mejores cantantes</h2>
+        <ol id="ranking" class="lista"></ol>
+      </section>
+      <section>
+        <h2>Promedio por mesa</h2>
+        <ul id="promedio-mesas" class="lista"></ul>
+      </section>
+    </div>
   </main>
 
   <script src="dj.js"></script>
